@@ -1,13 +1,13 @@
 # Open Skin Selector
 
-An independent Teardown skin selector by **Luiz-AVcruz**, version **1.2.0**.
+An independent Teardown skin selector by **Luiz-AVcruz**, version **1.2.1**.
 Choose your own character during gameplay and retain that preference between
 missions, campaign co-op sessions, hosts and game restarts. English is the default;
 Brazilian Portuguese is available in Settings.
 
 ## Use and installation
 
-Extract `dist/OpenSkinSelector-1.2.0.zip` into Teardown's local mods directory
+Extract `dist/OpenSkinSelector-1.2.1.zip` into Teardown's local mods directory
 (`Documents/Teardown/mods`) as the folder **Open Skin Selector** and enable it.
 For an existing installation named `OpenSkinSelector`, rename that folder before
 extracting the update into it; keep one copy and preserve `id.txt` if published.
@@ -16,7 +16,10 @@ Open **Skins** from
 the pause menu. Select a character, inspect its details, then press **Apply**.
 Closing the menu or pressing Esc cancels only the selection that has not been
 applied. An optional menu shortcut can be configured in Settings; none is assigned
-initially. About contains authorship, version and licensing information.
+initially. Click **Set shortcut**, then press a key such as F6. Accepted keys are
+shown immediately. A reserved or unsupported key is shown with an explanation
+and capture continues; Esc cancels. The saved key opens and closes the selector
+unless its search field is typing. About contains authorship, version and licensing information.
 
 Search by name with the native text field. Matching is literal, case-insensitive
 and ignores common Portuguese accents. Combine it with All / Game / Mods / Favorites.
@@ -72,6 +75,10 @@ boolean values; `auto_restore` controls next-entry restoration (missing means on
 and is not saved to disk. Existing preferences require no migration. The mod does not write
 `savegame.player.character`, character unlocks or the save data of other mods.
 There is no migration or dependency on In-Game Skin Changer saves.
+Teardown additionally scopes this registry to the mod identity. Renaming a local
+folder or moving to a Workshop item can change that identity and expose a new
+profile; identical logical keys do not automatically transfer the old data. Keep
+a backup before such changes and preserve newer destination choices during recovery.
 
 For removal, choose **Follow game selection**, disable this mod and reload the map.
 Its own preference can remain in the save without affecting gameplay. Do not edit
@@ -137,7 +144,10 @@ skin salva problemática sem apagar favoritos. A pasta instalada agora se chama
 **Open Skin Selector**, com espaços; mantenha somente uma cópia e confira sua
 ativação após reiniciar o jogo.
 
-Em Configurações é possível mudar o idioma e definir um atalho opcional. Esc e
+Em Configurações é possível mudar o idioma e definir um atalho opcional. Clique
+em **Definir atalho** e pressione uma tecla, como F6. A tecla aceita aparece na
+tela; uma rejeição mostra o motivo e mantém a captura aberta. Esc cancela a captura.
+Fora dela, Esc e
 Fechar descartam somente a seleção ainda não aplicada.
 
 Cada pessoa guarda a própria preferência no computador, válida entre missões,

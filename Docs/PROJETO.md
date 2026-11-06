@@ -2,7 +2,7 @@
 
 ## Objetivo e decisões
 
-Mod independente de escolha de personagem por **Luiz-AVcruz**, versão **1.2.0**.
+Mod independente de escolha de personagem por **Luiz-AVcruz**, versão **1.2.1**.
 O usuário quer manter a skin entre partidas, principalmente na campanha coop,
 com código próprio modificável e redistribuível e documentação equivalente à do
 Open Session Panel. A estrutura documental parte do Template-Projeto, sem copiar
@@ -265,8 +265,9 @@ habilitar/desabilitar mods. O gerenciador nativo usa `.listname` para essa lista
 enquanto o título detalhado usa `.name`; o log já registrava Open Skin Selector
 com espaços, mas a pasta local técnica era OpenSkinSelector. A cópia instalada
 e a raiz do ZIP passam a **Open Skin Selector**, sem criar outra cópia. O workspace
-continua OpenSkinSelector. Preferências usam o namespace estável do mod e não o
-nome da pasta. Um novo ID de mod local pode exigir ativação após reiniciar; não
+continua OpenSkinSelector. Embora o prefixo lógico do código seja estável, o motor adiciona o ID do mod
+ao armazenamento físico: uma renomeação pode expor outro perfil. Não se presume
+transferência automática dos dados entre IDs. Um novo ID de mod local pode exigir ativação após reiniciar; não
 se reescrevem listas de mods com um ID presumido.
 
 `mod/options.lua` é um entrypoint clássico com `draw()`, como especificado no guia
@@ -294,3 +295,48 @@ https://github.com/Luiz-AVcruz/Open-Skin-Selector-OSS.git . Remoto `origin`, bra
 `main`, autoria Luiz-AVcruz com email público noreply. O envio inicial usa push
 normal, sem force, depois dos checks e da inspeção do conteúdo; não publica no
 Workshop. Backups, `id.txt`, artefatos de runtime e dados pessoais não entram no Git.
+
+### Correção de captura de atalho — 1.2.1
+
+Relato no jogo: nas Opções do gerenciador e em Configurações na partida, o pedido
+para pressionar uma tecla aparecia, mas uma tentativa encerrava a captura sem
+mostrar ou salvar a tecla. O usuário confirmou que o recurso equivalente do OSP
+funcionava. A comparação com o OSP instalado e com `input_options_logic.lua` do
+jogo mostrou leitura direta de `InputLastPressedKey`, eventos de mouse ignorados
+e captura mantida após rejeição. O OSS dependia de `InputPressed("any")` e encerrava
+a captura rejeitada; na UI da partida, seu aviso era escrito em um estado que
+não aparecia ao lado do controle e podia ser substituído pelo estado da skin.
+
+O helper compartilhado passa a ler eventos físicos específicos e o canal da
+última tecla, sem depender de `any`. Isso atende entrega por canais independentes
+ou um canal de última entrada ainda indicando mouse. Sem tecla ou com mouse, a
+captura continua; Esc cancela; uma tecla rejeitada mostra o valor e mantém a
+captura; uma tecla válida salva e confirma o valor. As restrições anteriores de
+teclas de movimento são preservadas. A UI lê também no draw para suportar a fase
+de entrega de entrada; o estado torna a confirmação idempotente entre tick/draw.
+A tecla salva alterna abrir/fechar fora da pesquisa, sem fechar ao ser capturada.
+
+Regressão: os testes atualizados falham contra o código 1.2.0 na captura do
+gerenciador quando a última tecla chega sem o flag `any`. Passam com a correção.
+Foram incluídos eventos vazios/agregados, mouse, tecla rejeitada seguida de válida,
+evento físico com última entrada de mouse, confirmação no draw e mudança no
+entrypoint real de opções refletida em um novo contexto real da UI de jogo.
+Os testes locais abrangem 23 assertivas das opções, 66 do núcleo e o conjunto UI.
+Isso prova os contratos simulados, não o teclado observado em uma partida real;
+a causa exata de cada tecla rejeitada no relato ainda não foi registrada no motor.
+
+A inspeção do save local revelou isolamento adicional pelo ID do mod:
+`savegame.mod.local-openskinselector.openskinselector` e
+`savegame.mod.local-open-skin-selector.openskinselector` são perfis diferentes.
+A suposição anterior de independência do nome da pasta estava incorreta. Com o
+jogo fechado e backup compactado/verificado, foram recuperados somente os campos
+pessoais ausentes `character` e `favorites` do perfil antigo para o destino ainda
+novo; valores novos existentes, perfil antigo, OSP e o restante do save foram
+preservados. O contador de sessão não foi migrado. A recuperação é local a esta
+instalação e não é uma migração automática embutida no mod.
+
+O save usa nomes de nós numéricos aceitos pelo Teardown e rejeitados por parsers
+XML convencionais. Para conferir a preservação, somente a representação em
+memória normalizou esses nomes. A escrita final inseriu fragmentos originais
+apenas no corpo do perfil de destino, sem reserializar ou normalizar o restante
+do arquivo. Um recibo com hashes e campos recuperados fica no backup central.

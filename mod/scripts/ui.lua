@@ -9,6 +9,7 @@ local selectedId = ""
 local scroll = 0
 local maxScroll = 0
 local capturingShortcut = false
+local shortcutFeedback = ""
 local clickConsumed = false
 local suppressPointer = false
 local searchQuery = ""
@@ -32,6 +33,22 @@ local C = {
 
 local function T(key, ...)
     return OSS.text(key, ...)
+end
+
+local function captureShortcut()
+    if not capturingShortcut then return end
+    local key=OSS.pressedShortcutKey()
+    if key=="esc" then capturingShortcut=false;shortcutFeedback=""
+    elseif key~="" then
+        if OSS.validShortcut(key) then
+            SetString(OSS.root.."shortcut",key)
+            capturingShortcut=false
+            shortcutFeedback=T("shortcut_saved_key",key:upper())
+        else
+            -- Rejection is visible and keeps waiting; it never clears the old bind.
+            shortcutFeedback=T("shortcut_rejected_key",key:upper())
+        end
+    end
 end
 
 local function inside(x, y, w, h, px, py)
@@ -385,10 +402,12 @@ local function drawSettings()
     drawText(0,158,T("shortcut"),16,C.text,w,true)
     local shortcut=GetString(OSS.root.."shortcut")
     drawText(0,190,shortcut=="" and "—" or string.upper(shortcut),15,C.muted,180)
-    if capturingShortcut then drawText(0,218,T("capture"),14,C.accent,w) end
-    if button("set_shortcut",0,250,175,38,T("set_shortcut"),"plain",false) then capturingShortcut=true end
+    if capturingShortcut or shortcutFeedback~="" then
+        drawText(0,218,shortcutFeedback~="" and shortcutFeedback or T("capture"),14,C.accent,w)
+    end
+    if button("set_shortcut",0,250,175,38,T("set_shortcut"),"plain",false) then capturingShortcut=true;shortcutFeedback="" end
     if button("clear_shortcut",183,250,120,38,T("clear"),"plain",shortcut=="") then
-        SetString(OSS.root.."shortcut","");capturingShortcut=false
+        SetString(OSS.root.."shortcut","");capturingShortcut=false;shortcutFeedback=T("shortcut_cleared")
     end
     local restore=OSS.autoRestore()
     if button("auto_restore",0,312,math.min(w,430),38,T("auto_restore")..": "..T(restore and "enabled" or "disabled"),restore and "active" or "plain",false) then
@@ -477,7 +496,7 @@ function client.ossMenuTick(dt)
     if GetString(OSS.root.."language")=="" then SetString(OSS.root.."language","en") end
     if not menuOpen then
         if PauseMenuButton(T("pause"),"bottom_bar") then
-            menuOpen=true;tab="skins";scroll=0
+            menuOpen=true;tab="skins";scroll=0;shortcutFeedback=""
             searchQuery="";searchActive=false;searchFocusRequest=false
             client.ossRefreshCatalog()
             local state=currentState()
@@ -497,16 +516,16 @@ function client.ossMenuTick(dt)
         return
     end
 
-    if capturingShortcut and InputPressed("any") then
-        local key=string.lower(InputLastPressedKey() or "")
-        if key=="esc" then capturingShortcut=false
-        elseif OSS.validShortcut(key) then
-            SetString(OSS.root.."shortcut",key);client.ossStatus="shortcut_saved"
-            capturingShortcut=false
-        else client.ossStatus="invalid_key";capturingShortcut=false end
+    if capturingShortcut then
+        captureShortcut()
     elseif InputPressed("esc") then
         if capturingShortcut then capturingShortcut=false
         else menuOpen=false;selectedId="";searchQuery="";searchActive=false;searchFocusRequest=false end
+    elseif not searchActive then
+        local shortcut=GetString(OSS.root.."shortcut")
+        if shortcut~="" and InputPressed(shortcut) then
+            menuOpen=false;selectedId="";searchQuery="";searchActive=false;searchFocusRequest=false
+        end
     end
 
     if not capturingShortcut then
@@ -517,6 +536,9 @@ end
 
 function client.ossMenuDraw()
     clickConsumed=false
+    -- UI input can be available at draw rather than tick. The capture state
+    -- makes a second read idempotent after a successful save or cancellation.
+    if menuOpen then captureShortcut() end
     if menuOpen then UiMakeInteractive();drawMenu() end
     suppressPointer=false
 end
@@ -525,7 +547,7 @@ OSS.UI={state=function()
     local visibleIds={}
     for _,item in ipairs(visibleCatalog()) do visibleIds[#visibleIds+1]=item.id end
     return {open=menuOpen,tab=tab,filter=filter,selected=selectedId,scroll=scroll,maxScroll=maxScroll,
-        capturingShortcut=capturingShortcut,window={x=window.x,y=window.y,w=window.w,h=window.h},
+        capturingShortcut=capturingShortcut,shortcutFeedback=shortcutFeedback,window={x=window.x,y=window.y,w=window.w,h=window.h},
         view={x=view.x,y=view.y,w=view.w,h=view.h},query=searchQuery,searchActive=searchActive,
         cards=lastCards,visibleIds=visibleIds,skinLayout=skinLayout,
         footer={followX=view.x,applyRight=view.x+view.w},nativeFocusRequest=searchFocusRequest}

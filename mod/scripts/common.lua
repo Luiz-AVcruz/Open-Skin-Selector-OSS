@@ -1,5 +1,5 @@
 -- Copyright (C) 2026 Luiz-AVcruz. AGPL-3.0-or-later; see ADDITIONAL-PERMISSION.
-OSS = {version = "1.2.0", root = "savegame.mod.openskinselector.", catalog = {}, byId = {}}
+OSS = {version = "1.2.1", root = "savegame.mod.openskinselector.", catalog = {}, byId = {}}
 
 function OSS.autoRestore()
     local key=OSS.root.."auto_restore"
@@ -13,6 +13,26 @@ function OSS.validShortcut(key)
     if key:match("^[a-z0-9]$") or key=="insert" or key=="home" or key=="end" then return true end
     for i=1,12 do if key=="f"..i then return true end end
     return false
+end
+
+-- Keyboard capture does not require the independent "any" input flag. Prefer
+-- a concrete physical press when the last-input channel still reports a mouse.
+function OSS.pressedShortcutKey()
+    if InputPressed("esc") or InputPressed("menu_cancel") then return "esc" end
+    local last=(InputLastPressedKey() or ""):lower()
+    if OSS.validShortcut(last) and InputPressed(last) then return last end
+    for code=97,122 do
+        local key=string.char(code)
+        if InputPressed(key) then return key end
+    end
+    for code=48,57 do
+        local key=string.char(code)
+        if InputPressed(key) then return key end
+    end
+    for i=1,12 do if InputPressed("f"..i) then return "f"..i end end
+    for _,key in ipairs({"insert","home","end"}) do if InputPressed(key) then return key end end
+    if last=="lmb" or last=="rmb" or last=="mmb" then return "" end
+    return last
 end
 
 function OSS.integer(value, minimum)

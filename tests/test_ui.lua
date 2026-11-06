@@ -209,8 +209,20 @@ check(OSS.text("apply")=="Apply","English can be restored through the UI")
 
 pressView(87,269)
 check(OSS.UI.state().capturingShortcut,"Set shortcut begins key capture")
-lastKey="f6";keys.any=true;client.ossMenuTick(0);keys.any=nil;lastKey=""
+lastKey="f6";client.ossMenuTick(0);lastKey=""
 check(GetString(OSS.root.."shortcut")=="f6","captured key is saved")
+pressView(87,269)
+keys.any=true;client.ossMenuTick(0);keys.any=nil
+check(OSS.UI.state().capturingShortcut,"empty aggregate event does not cancel binding")
+lastKey="lmb";client.ossMenuTick(0);lastKey=""
+check(OSS.UI.state().capturingShortcut,"mouse does not cancel binding")
+lastKey="w";client.ossMenuTick(0);lastKey=""
+check(OSS.UI.state().capturingShortcut and OSS.UI.state().shortcutFeedback:find("W",1,true),"rejected key is reported while capture remains active")
+keys.f7=true;lastKey="lmb";client.ossMenuTick(0);keys.f7=nil;lastKey=""
+check(GetString(OSS.root.."shortcut")=="f7","specific key delivery captures when last-input channel reports mouse")
+pressView(87,269)
+lastKey="f6";drawAtCanvas(500,250);lastKey=""
+check(GetString(OSS.root.."shortcut")=="f6" and not OSS.UI.state().capturingShortcut,"draw-phase keyboard delivery can finish binding")
 pressView(87,269)
 lastKey="esc";keys.any=true;client.ossMenuTick(0);keys.any=nil;lastKey=""
 check(GetString(OSS.root.."shortcut")=="f6" and not OSS.UI.state().capturingShortcut,"Escape cancels shortcut capture")

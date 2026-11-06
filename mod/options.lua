@@ -5,6 +5,7 @@
 
 local capturing=false
 local message=""
+local messageKey=nil
 local scroll=0
 local maxScroll=0
 local pressed=false
@@ -35,13 +36,15 @@ function draw()
     local T=OSS.text
     pressed=InputPressed("lmb");consumed=false
     if InputPressed("esc") then
-        if capturing then capturing=false else Menu();return end
-    elseif capturing and InputPressed("any") then
-        local key=(InputLastPressedKey() or ""):lower()
-        if key~="lmb" and key~="rmb" and key~="mmb" and key~="" then
-            if OSS.validShortcut(key) then SetString(OSS.root.."shortcut",key);message="shortcut_saved"
-            else message="invalid_key" end
-            capturing=false
+        if capturing then capturing=false;message="";messageKey=nil else Menu();return end
+    elseif capturing then
+        local key=OSS.pressedShortcutKey()
+        if key=="esc" then capturing=false;message="";messageKey=nil
+        elseif key~="" then
+            messageKey=key:upper()
+            if OSS.validShortcut(key) then
+                SetString(OSS.root.."shortcut",key);message="shortcut_saved_key";capturing=false
+            else message="shortcut_rejected_key" end
         end
     end
     local canvas=UiCanvasSize()
@@ -70,9 +73,9 @@ function draw()
     local shortcut=GetString(OSS.root.."shortcut")
     text(0,84,T("shortcut")..": "..(shortcut~="" and shortcut:upper() or "—"),17,w,false)
     text(0,112,capturing and T("capture") or T("options_hint"),14,w,true)
-    if button(0,164,half,T("set_shortcut")) then capturing=true end
+    if button(0,164,half,T("set_shortcut")) then capturing=true;message="";messageKey=nil end
     if button(half+10,164,half,T("clear"),false,shortcut=="") then
-        SetString(OSS.root.."shortcut","");capturing=false;message="shortcut_cleared"
+        SetString(OSS.root.."shortcut","");capturing=false;message="shortcut_cleared";messageKey=nil
     end
     local restore=OSS.autoRestore()
     if button(0,224,w,T("auto_restore")..": "..T(restore and "enabled" or "disabled"),restore) then
@@ -84,12 +87,12 @@ function draw()
     text(0,0,GetString(OSS.root.."character")~="" and GetString(OSS.root.."character") or T("no_saved_skin"),14,w,true)
     UiPop()
     if button(0,402,w,T("clear_saved_skin"),false,GetString(OSS.root.."character")=="") then
-        ClearKey(OSS.root.."character");message="saved_skin_cleared"
+        ClearKey(OSS.root.."character");message="saved_skin_cleared";messageKey=nil
     end
     text(0,448,T("clear_saved_skin_hint"),14,w,true)
     UiPop();clip=nil
     pointerX,pointerY=oldX,oldY
-    if message~="" then text(20,height-72,T(message),13,width-40,true) end
+    if message~="" then text(20,height-72,messageKey and T(message,messageKey) or T(message),13,width-40,true) end
     text(20,height-34,T("version",OSS.version),13,width-190,true)
     if button(width-146,height-48,126,T("close")) then Menu() end
     UiPop()

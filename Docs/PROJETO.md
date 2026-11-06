@@ -340,3 +340,12 @@ XML convencionais. Para conferir a preservação, somente a representação em
 memória normalizou esses nomes. A escrita final inseriu fragmentos originais
 apenas no corpo do perfil de destino, sem reserializar ou normalizar o restante
 do arquivo. Um recibo com hashes e campos recuperados fica no backup central.
+
+### Descrição no padrão do OSP
+
+A pedido do responsável, a descrição usa o mesmo template do Open Session Panel:
+resumo funcional em um parágrafo, Source code e AI Disclosure and Usage. O resumo
+foi adaptado ao seletor de skins e o link aponta para Open-Skin-Selector-OSS. O
+bloco AI Disclosure and Usage foi copiado integralmente do OSP, sem reescrita.
+A versão continua 1.2.1; trata-se apenas de texto e metadados. A cópia instalada
+e os pacotes são atualizados juntos; upload ao Workshop é uma etapa separada.

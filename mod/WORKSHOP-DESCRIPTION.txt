@@ -1,0 +1,11 @@
+Open Skin Selector by Luiz-AVcruz
+
+Choose your own character during a session and remember that choice between missions, campaign co-op sessions, hosts and game restarts. Each player keeps their preference locally. Select a skin, then press Apply; closing the menu cancels only the unapplied selection. Open Skins from the pause menu. An optional shortcut can be set in Settings. From the main menu, select this mod and open Options to change language and shortcut, disable automatic skin restoration, or clear a problematic saved skin without loading a map. Favorites are preserved.
+
+Browse available game characters and registered mod skins, with name search and All / Game / Mods / Favorites filters. Mark personal favorites without applying a skin; favorites remain saved between sessions, even if the skin is temporarily missing. Missing skins keep their saved preference and use the game's character until available again. Follow game selection removes the saved override. English and Brazilian Portuguese are included.
+
+Independent Lua implementation using Teardown's native character API. No skins, models or game scripts are bundled. Skin assets and this mod's matching files must be available to session participants. Disable other in-game skin changers when testing. Scripts are readable; an install archive and a complete matching source archive are distributed together.
+
+License: AGPL-3.0-or-later with an additional permission for the Teardown runtime/API. Copyright (C) 2026 Luiz-AVcruz. See LICENSE, ADDITIONAL-PERMISSION and SOURCE.md. Source code: https://github.com/Luiz-AVcruz/Open-Skin-Selector-OSS
+
+AI disclosure: developed with Codex assistance for code and documentation. The author directed the project. The thumbnail uses the logo supplied by the author. Local automated tests do not establish observed multiplayer or visual compatibility. Check the project's verification notes for the current evidence.
